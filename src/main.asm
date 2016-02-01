@@ -4,18 +4,20 @@
 ; The first writing is really more of just a 'Hello, world'
 ; of sorts at this point, however.
 
+org 0x7c00    ; Too cute; it's an origin!
+              ; Secretly may have forgotten this on the last push
+              ; Which possibly explains nothing happening
+
+
 one:
   ; Used to define where we are
   ; Again, very similar code to MikeOS starter
   ; It's simple to grasp, plus it makes for a quick
   ; start and commit here
-  mov ax, 07c0h
-  add ax, 288
-  mov ss, ax
-  mov sp, 4096
-
-  mov ax, 07C0h
+  
+  and ax, 0
   mov ds, ax
+  mov es, ax    ; Brings the nulled values to the masses 
 
 
 get_ready_to_print:
@@ -25,7 +27,10 @@ get_ready_to_print:
   mov si, greetingA
   call print_msg
 
-  jmp $   ; endless money? (infinite loop due to jump)
+  cli
+  hlt     ; I didn't care for the previous implementation...
+          ; Research digs up using halt. I've learned in the past to always use halt. Let's use halt.
+          ; By the way, new approach inspired by BrokenThorn's tutorials (thanks, BrokenThorn!)
 
 
 greeting: db 'Project Gainsboro', 0
@@ -37,19 +42,19 @@ print_msg:
 ; between x86 Assembly and previous-known non-x86 assembly
 ; was a helpful guide written by the author of MikeOS.
 ; This code might look quite similar as a result.
+
+; Review: Robert this is how you print strings just go with it (we think)
   lodsb
   cmp al, 0   ; Is 0-terminated? We defined this above
-  je .done    ; Evaluate flags based on cmp operation
+  je doneHere    ; Evaluate flags based on cmp operation
   int 10h     ; Essentially a BIOS 'OUT', prints char based on register info
   jmp print_msg  ; All night long (All night)
 
-.done:
+doneHere:
   ; Pls
   ret         ; This thing is everywhere; returns are great, also could do jmp
 
-; The rest of this is left over for completion.
-; To make things easy, I just took the trail of
-; the MikeOS example for signature and sector values
+; Since we are done here, and our bootloader needs to be 512 bytes...let's fill the rest with 0s.
 
-  times 510-($-$$) db 0
-  dw 0xAA55
+  times 510-($-$$) db 0   ; The rest is still...well, actually, written, as this writes all 0s.
+  dw 0xAA55 ; Why, this is the silliest thing I've seen to boot! (Puns will decrease, I promise)
